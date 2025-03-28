@@ -1,0 +1,95 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import useSound from 'use-sound';
+
+// تحميل الأصوات من المجلد العام
+const correctSoundUrl = '/sounds/correct.mp3';
+const wrongSoundUrl = '/sounds/wrong.mp3';
+const backgroundMusicUrl = '/sounds/background.mp3';
+
+// قائمة الأسئلة الخاصة باللعبة
+const questions = [
+  { question: "ما هو أكبر كوكب في المجموعة الشمسية؟", options: ["المريخ", "الزهرة", "المشتري", "نبتون"], answer: "المشتري" },
+  { question: "ما العنصر الكيميائي الذي يرمز له بـ O؟", options: ["أكسجين", "ذهب", "فضة", "هيدروجين"], answer: "أكسجين" },
+  { question: "كم عدد ألوان قوس قزح؟", options: ["5", "6", "7", "8"], answer: "7" },
+  { question: "ما هي أول سورة نزلت في القرآن الكريم؟", options: ["العلق", "الفاتحة", "الإخلاص", "الناس"], answer: "العلق" },
+  { question: "من هو هداف كأس العالم 2018؟", options: ["ميسي", "رونالدو", "هاري كين", "نيمار"], answer: "هاري كين" },
+  { question: "متى وقعت الحرب العالمية الثانية؟", options: ["1914-1918", "1939-1945", "1950-1953", "1960-1965"], answer: "1939-1945" },
+  { question: "ما هو الحيوان الذي يُلقب بملك الغابة؟", options: ["النمر", "الأسد", "الفهد", "الدب"], answer: "الأسد" },
+  { question: "كم عدد أركان الإسلام؟", options: ["3", "4", "5", "6"], answer: "5" },
+  { question: "من هو مؤسس علم الجبر؟", options: ["أبو بكر الرازي", "الخوارزمي", "ابن سينا", "الكندي"], answer: "الخوارزمي" },
+  { question: "أي دولة فازت بكأس العالم 2014؟", options: ["الأرجنتين", "ألمانيا", "البرازيل", "فرنسا"], answer: "ألمانيا" },
+  { question: "ما هو أطول نهر في العالم؟", options: ["الأمازون", "النيل", "الميكونغ", "الدانوب"], answer: "النيل" },
+  { question: "كم عدد قارات العالم؟", options: ["5", "6", "7", "8"], answer: "7" },
+  { question: "من هو مخترع المصباح الكهربائي؟", options: ["ألكسندر جراهام بيل", "توماس إديسون", "نيكولا تسلا", "جيمس وات"], answer: "توماس إديسون" },
+  { question: "ما اسم العملة الرسمية في اليابان؟", options: ["الدولار", "الين", "اليورو", "اليوان"], answer: "الين" },
+  { question: "ما هو العنصر الأساسي الذي تحتاجه النباتات لعملية البناء الضوئي؟", options: ["الأكسجين", "ثاني أكسيد الكربون", "النيتروجين", "الهيدروجين"], answer: "ثاني أكسيد الكربون" },
+  { question: "في أي سنة تم افتتاح قناة السويس؟", options: ["1869", "1901", "1945", "1956"], answer: "1869" },
+  { question: "من هو أول خليفة في الإسلام؟", options: ["عمر بن الخطاب", "عثمان بن عفان", "أبو بكر الصديق", "علي بن أبي طالب"], answer: "أبو بكر الصديق" },
+  { question: "ما هو العدد الذري لعنصر الكربون؟", options: ["4", "6", "8", "12"], answer: "6" },
+  { question: "ما اسم أكبر محيط في العالم؟", options: ["الأطلسي", "الهندي", "الهادي", "المتجمد الشمالي"], answer: "الهادي" },
+  { question: "كم عدد أسنان الإنسان البالغ؟", options: ["28", "30", "32", "36"], answer: "32" }
+];
+
+export default function QuizGame() {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [feedback, setFeedback] = useState(null);
+  const [playCorrect] = useSound(correctSoundUrl);
+  const [playWrong] = useSound(wrongSoundUrl);
+  const [playBackground, { stop }] = useSound(backgroundMusicUrl, { volume: 0.5, loop: true });
+
+  useEffect(() => {
+    playBackground();
+    return () => stop();
+  }, [playBackground, stop]);
+
+  const handleAnswer = (option) => {
+    if (option === questions[currentQuestion].answer) {
+      playCorrect();
+      setFeedback("✅ إجابتك صحيحة!");
+    } else {
+      playWrong();
+      setFeedback("❌ إجابتك خاطئة!");
+    }
+    setTimeout(() => {
+      setFeedback(null);
+      setCurrentQuestion(currentQuestion + 1);
+    }, 1000);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white p-5">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
+        <h1 className="text-4xl font-extrabold mb-6 bg-black p-3 rounded-xl shadow-lg">🔥 تحدي الأسئلة السريعة 🔥</h1>
+      </motion.div>
+      {currentQuestion < questions.length ? (
+        <Card className="p-6 w-96 bg-white text-black shadow-2xl">
+          <CardContent>
+            <h2 className="text-2xl font-bold mb-4">{questions[currentQuestion].question}</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {questions[currentQuestion].options.map((option, index) => (
+                <Button key={index} onClick={() => handleAnswer(option)}>{option}</Button>
+              ))}
+            </div>
+            {feedback && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="mt-4 text-lg font-semibold">
+                {feedback}
+              </motion.p>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="text-center p-5 bg-black/70 rounded-lg">
+          <h2 className="text-3xl mb-4">🎉 لقد أكملت جميع الأسئلة! 🎉</h2>
+          <Button onClick={() => setCurrentQuestion(0)}>إعادة المحاولة</Button>
+        </div>
+      )}
+      <footer className="mt-10 text-center text-sm text-gray-200">
+        <p>تم تصميم اللعبة بواسطة Mizo Helmy</p>
+        <p>للتواصل: moaazmahmoud.756@gmail.com</p>
+      </footer>
+    </div>
+  );
+}
